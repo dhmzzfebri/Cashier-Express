@@ -12,12 +12,34 @@ export default function Products() {
     description: '',
     price: '',
   });
+  const [formUpdate, setFormUpdate] = useState({
+    name: '',
+    quantity: '',
+    description: '',
+    price: '',
+  });
 
+  // State simpan product
   const [products, setProducts] = useState([]);
   // State untuk menyimpan id produk yang akan diedit
-  const [editProductId, setEditProductId] = useState(null);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [ productToUpdate, setProductToUpdate ] = useState(null)
   // State data API
   const [dataProduct, setDataProduct] = useState([]);
+  // State untuk menampilkan Modal Box
+  const [tampilkan, setTampilkan] = useState(false);
+  // Handle function button untuk menampilkan button
+  const handleShow = () => {
+    setTampilkan(true);
+  };
+  //handle button modal edit
+  const [tampilEdit, setTampilEdit] = useState(false);
+  const buttonCloseEdit = () => {
+    setTampilEdit(false);
+  };
+  const buttonClose = () => {
+    setTampilkan(false);
+  };
 
   useEffect(() => {
     const ambilData = async () => {
@@ -28,18 +50,17 @@ export default function Products() {
     ambilData();
   }, [products]);
 
-  // Pemeriksaan autentikasi
-  // useEffect(() => {
-  //   const authToken = Cookies.get('authToken');
-  //   if (!authToken) {
-  //     // Jika tidak ada token autentikasi, redirect ke halaman login
-  //     window.location.href = '/login';
-  //   }
-  // }, []);
+  //Pemeriksaan autentikasi login
+  useEffect(() => {
+    const authToken = Cookies.get('authToken');
+    if (!authToken) {
+      // Jika tidak ada token autentikasi, redirect ke halaman login
+      window.location.href = '/login';
+    }
+  }, []);
 
   const handleProduct = async (e) => {
     e.preventDefault();
-
     const productAPI = await fetch('http://localhost:8000/api/v2/products', {
       headers: {
         'Content-Type': 'application/json',
@@ -47,70 +68,70 @@ export default function Products() {
       method: 'POST',
       body: JSON.stringify(formProduct),
     });
-
     const result = await productAPI.json();
     setProducts([...products, result.data]);
-
     buttonClose();
   };
 
-  // State untuk menampilkan Modal Box
-  const [tampilkan, setTampilkan] = useState(false);
+  const handleDeleteProduct = async (productId) => {
+    const response = await fetch(`http://localhost:8000/api/v2/products/${productId}`, {
+      method: 'DELETE',
+    });
 
-  // Handle function button untuk menampilkan button
-  const handleShow = () => {
-    setTampilkan(true);
-  };
-
-  //handle button modal edit
-  const [tampilEdit, setTampilEdit] = useState(false);
-
-  const handleEdit = (id) => {
-    // Mengatur id produk yang akan diedit
-    setEditProductId(id);
-    setTampilEdit(true);
-
-    // Mengisi nilai input dengan data produk yang sesuai dengan id yang dipilih
-    const productToEdit = products.find((product) => product.id === id);
-    if (productToEdit) {
-      setFormProduct({
-        name: productToEdit.name,
-        quantity: productToEdit.quantity,
-        description: productToEdit.description,
-        price: productToEdit.price,
-      });
+    if (response.ok) {
+      const updatedProducts = dataProduct.filter((product) => product.id !== productId);
+      setDataProduct(updatedProducts);
+    } else {
+      console.error('Gagal melakukan penghapusan data');
     }
   };
 
-  const buttonCloseEdit = () => {
-    setTampilEdit(false);
-  };
+  const handleUpdate = (productID) => {
+    // useEffect(() => {
+    const productToUpdate = dataProduct && dataProduct.find((product) => product.id === productID)
 
-  // Handle function button untuk menutup modal box
-  const buttonClose = () => {
-    setTampilkan(false);
-  };
+    setFormUpdate({
+      name: productToUpdate.name,
+      quantity: productToUpdate.quantity,
+      description: productToUpdate.description,
+      price: productToUpdate.price
+    })
+    setEditingProduct(productToUpdate)
+    setProductToUpdate(productToUpdate)
+    setTampilEdit(true)
+  }
 
-  //fuction hapus data
-  const handleDelete = async (id) => {
-    try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
-      });
-      console.log(response);
-      if (response.ok) {
-        // Hapus produk dari state setelah berhasil dihapus dari server
-        const updatedProducts = products.filter((product) => product.id !== id);
-        setProducts(updatedProducts);
-        console.log('Product deleted successfully');
-      } else {
-        console.error('Failed to delete product:', response.statusText);
-      }
-      console.log(response);
-    } catch (error) {
-      console.error('Error deleting product:', error);
+  const handleUpdateProduct = async (e, productId) => {
+    e.preventDefault()
+
+    const updatedProducts = {
+      name: formUpdate.name,
+      quantity: formUpdate.quantity,
+      description: formUpdate.description,
+      price: formUpdate.price
     }
-  };
+
+    const response = await fetch(`http://localhost:8000/api/v2/products/${productId}`, {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      method: 'PUT',
+      body: JSON.stringify(formUpdate)
+    })
+
+    if(response.ok){
+      const updatedProductData = await response.json()
+      const editProduct = dataProduct.map((product) => 
+        product.id === productId ? updatedProductData : product  
+      )
+
+      setDataProduct(editProduct)
+      setTampilEdit(false)
+
+    } else {
+      console.error("Gagal melakukan update data")
+    }
+}
 
   return (
     <>
@@ -170,15 +191,15 @@ export default function Products() {
                     <td>{product.name}</td>
                     <td>{product.quantity}</td>
                     <td>{product.description}</td>
-                    <td>{product.price}</td>
+                    <td>Rp.{new Intl.NumberFormat().format(product.price)}</td>
                     <td>
-                      <Button variant="danger" onClick={() => handleDelete(product.id)}>
+                      <Button variant="danger" onClick={() => handleDeleteProduct(product.id)}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-x-square" viewBox="0 0 16 16">
                           <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"></path>
                           <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"></path>
                         </svg>
                       </Button>{' '}
-                      <Button variant="warning" onClick={handleEdit}>
+                      <Button variant="warning" onClick={() => handleUpdate(product.id)}>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
                           <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
                           <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
@@ -211,7 +232,7 @@ export default function Products() {
                 <Form.Control type="number" id="inputPassword5" aria-describedby="passwordHelpBlock" value={formProduct.price} onChange={(e) => setFormProduct({ ...formProduct, price: e.target.value })} />
               </Modal.Body>
               <Modal.Footer>
-                <Button variant="primary" onClick="">
+                <Button variant="primary" onClick={(e) => handleUpdateProduct(e, editingProduct.id)}>
                   Save Changes
                 </Button>
               </Modal.Footer>

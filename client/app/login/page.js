@@ -56,23 +56,24 @@ export default function Login() {
           <div className="loginContainer col-lg-12">
             <div className="p-4 d-flex justify-content-center gap-2">
               <div className="card">
-                <div className="p-4 m-1 card-body">
+                <div className="p-4 m-1 card-body " style={{ width: '350px' }}>
+                  <h5 className="mb-0 d-flex justify-content-center">Selamat Datang di Tampilan</h5>
                   <h5 className="mb-3 d-flex justify-content-center">Login</h5>
                   {/* hanya akan tampil, jika nilai dari variable 'tampil' adalah true */}
                   {Tampil && (
-                    <div style={{ width: '300px' }}>
+                    <div style={{ width: '300px'}}>
                       <Alert className="mb-0" variant={Warna}>
                         {Pesan}
                       </Alert>
                     </div>
                   )}
                   <Form>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                      <Form.Control type="text" placeholder="Username" name="username" value={formUser.username} onChange={(e) => setFormUser({ ...formUser, username: e.target.value })} />
+                    <Form.Group className="mb-3 mt-1" controlId="formBasicEmail">
+                      <Form.Control type="text" placeholder="Username" name="username" value={formUser.username} onChange={(e) => setFormUser({ ...formUser, username: e.target.value })} required />
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formBasicPassword">
-                      <Form.Control type="password" placeholder="Password" name="password" value={formUser.password} onChange={(e) => setFormUser({ ...formUser, password: e.target.value })} />
+                      <Form.Control type="password" placeholder="Password" name="password" value={formUser.password} onChange={(e) => setFormUser({ ...formUser, password: e.target.value })} required />
                     </Form.Group>
                     <small class="pb-4 d-block">
                       Do not have an account?

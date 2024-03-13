@@ -34,6 +34,34 @@ class ProductService{
             return error
         }
     }
+
+      // Update Operation
+      async edit(id: number, data: ProductEntity){
+        try {
+            const hasil = await db.productss.update({
+                name: data.name,
+                quantity: data.quantity,
+                description: data.description,
+                price: data.price
+            },
+            { where: { id: id } } )
+            return hasil
+        } catch (error) {
+            return error
+        }
+    }
+
+    // Delete Operation
+    async delete(id: number){
+        try {
+            const result = await db.productss.destroy({
+                where: { id: id },
+            })
+            return result
+        } catch (error) {
+            return error            
+        }
+    }
 }
 
 export default ProductService

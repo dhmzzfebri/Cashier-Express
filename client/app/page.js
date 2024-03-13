@@ -1,10 +1,11 @@
 'use client';
 import React, { useState } from 'react';
 import Products from './products/page';
+import Login from './login/page';
 export default function Home() {
   return (
     <>
-      <Products/>
+      <Login/>
     </>
   );
 }

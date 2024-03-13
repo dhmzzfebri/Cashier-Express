@@ -16,7 +16,15 @@ export default function Register() {
   const [warna, setWarna] = useState('');
 
   const handleRegister = async (e) => {
+    // Basic form validation
+    if (!formUser.username || !formUser.password || !formUser.role || formUser.role === 'Pilih') {
+      setWarna('danger');
+      setPesan('Mohon isi Kolom di bawah');
+      setTampil(true);
+      return;
+    }
     e.preventDefault();
+
     //masukan data ke serve
     const registerAPI = await fetch('http://localhost:8000/api/v2/users', {
       headers: {
@@ -65,14 +73,14 @@ export default function Register() {
                     </div>
                   )}
                   <Form>
-                    <Form.Group className="mb-3" controlId="formBasicEmail">
-                      <Form.Control type="text" value={formUser.username} onChange={(e) => setFormUser({ ...formUser, username: e.target.value })} placeholder="Username" />
+                    <Form.Group className="mb-3 mt-3" controlId="formBasicEmail">
+                      <Form.Control type="text" value={formUser.username} onChange={(e) => setFormUser({ ...formUser, username: e.target.value })} placeholder="Username" required />
                     </Form.Group>
 
                     <Form.Group className="mb-3" controlId="formBasicPassword">
-                      <Form.Control type="password" value={formUser.password} onChange={(e) => setFormUser({ ...formUser, password: e.target.value })} placeholder="Password" />
+                      <Form.Control type="password" value={formUser.password} onChange={(e) => setFormUser({ ...formUser, password: e.target.value })} placeholder="Password" required />
                     </Form.Group>
-                    <Form.Select className="mb-3" aria-label="Default select example" onChange={(e) => setFormUser({ ...formUser, role: e.target.value })}>
+                    <Form.Select className="mb-3" aria-label="Default select example" onChange={(e) => setFormUser({ ...formUser, role: e.target.value })} required>
                       <option>Pilih</option>
                       <option value="admin">Admin</option>
                       <option value="petugas">Petugas</option>
